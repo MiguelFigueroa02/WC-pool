@@ -1,0 +1,5 @@
+.env
+quiniela-mundial-2026-497903-bbcef28c98bc.json
+.streamlit/secrets.toml
+*__pycache__/
+*venv*/
