@@ -54,9 +54,16 @@ def save_predictions(predictions):
     st.write(rows)
     worksheet.append_rows(rows)
 
-def get_predictions():
-
-    pass
+def get_predictions(user_id, etapa):
+    spreadsheet = get_spreadsheet()
+    worksheet = spreadsheet.worksheet("predicciones")
+    records = worksheet.get_all_records()
+    return [
+        row
+        for row in records
+        if str(row['usuario_id']) == user_id
+        and row["etapa"] == etapa
+    ]
 
 
 def save_results():
