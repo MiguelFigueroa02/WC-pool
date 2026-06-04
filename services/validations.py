@@ -22,3 +22,13 @@ def validate_user_id(user_id:str):
         return False, 'El número de celular debe contener exactamente 10 dígitos.'
     
     return True, user_id
+
+def validate_user_name(user_name):
+
+    if not user_name.strip():
+
+        return False, (
+            "Debes ingresar tu nombre."
+        )
+
+    return True, user_name.strip()

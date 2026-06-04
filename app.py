@@ -1,7 +1,7 @@
 from collections import defaultdict
 import streamlit as st
-from services.validations import (validate_user_id, is_stage_open)
-from services.google_sheets import (get_matches, get_predictions, save_predictions, get_results)
+from services.validations import (validate_user_id, is_stage_open, validate_user_name)
+from services.google_sheets import (get_matches, get_predictions, save_predictions, get_results, save_user_info, get_user_info)
 
 st.set_page_config(
     page_title="QuinieLIMS",
@@ -33,9 +33,19 @@ user_id = st.text_input(
     "Ingresa tu número de celular",
     placeholder="Ejemplo: 4490131313"
 )
+user_name = st.text_input(
+    "¿Cuál es tu nombre?",
+    placeholder="Ejemplo: Diego Armando Maradona"
+)
+
 existing_predictions = []
 is_valid = False
 is_valid, result = validate_user_id(user_id)
+is_valid_name, name_result = (
+    validate_user_name(
+        user_name
+    )
+)
 if is_valid:
     existing_predictions = get_predictions(
         user_id=result,
@@ -76,7 +86,9 @@ else:
     submit = False
 
 if submit:
-    if not is_stage_open("fase_de_grupos"):
+    if not is_valid_name:
+        st.error(name_result)
+    elif not is_stage_open("fase_de_grupos"):
         st.error("La fase de grupos ya se encuentra cerrada.")
     else:
         predictions = []
@@ -106,7 +118,11 @@ if submit:
             )
         is_valid = False
         submit = False
+        existing_user = get_user_info(result)
+
         save_predictions(predictions)
+        if not existing_user:
+            save_user_info(result,name_result)
         st.success("Predicciones registradas correctamente")
     
 

@@ -34,7 +34,29 @@ def get_matches():
     worksheet = spreadsheet.worksheet("partidos")
     return worksheet.get_all_records()
 
+def get_user_info(user_id):
+    spreadsheet = get_spreadsheet()
+    worksheet = spreadsheet.worksheet(
+        "user_info"
+    )
+    records = worksheet.get_all_records()
+    for row in records:
+        if str(row["user_id"]) == str(user_id):
+            return row
 
+    return None
+
+def save_user_info(user_id, user_name):
+    spreadsheet = get_spreadsheet()
+    worksheet = spreadsheet.worksheet("user_info")
+    rows = [] 
+    rows.append(
+        [
+            user_id,
+            user_name
+        ]
+    )
+    worksheet.append_rows(rows)
 
 def save_predictions(predictions):
     spreadsheet = get_spreadsheet()
