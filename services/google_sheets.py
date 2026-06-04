@@ -65,6 +65,21 @@ def get_predictions(user_id, etapa):
         and row["etapa"] == etapa
     ]
 
+def get_all_predictions():
+    spreadsheet = get_spreadsheet()
+    worksheet = spreadsheet.worksheet(
+        "predicciones"
+    )
+    return worksheet.get_all_records()
+
+def get_results():
+    spreadsheet = get_spreadsheet()
+    worksheet = spreadsheet.worksheet("resultados")
+    records = worksheet.get_all_records()
+    return {
+        row['match_id']: row['resultado']
+        for row in records
+    }
 
 def save_results():
 

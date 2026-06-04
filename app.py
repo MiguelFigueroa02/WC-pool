@@ -1,7 +1,12 @@
 from collections import defaultdict
 import streamlit as st
 from services.validations import (validate_user_id, is_stage_open)
-from services.google_sheets import (get_matches, get_predictions, save_predictions)
+from services.google_sheets import (get_matches, get_predictions, save_predictions, get_results)
+
+st.set_page_config(
+    page_title="QuinieLIMS",
+    initial_sidebar_state='expanded'
+)
 
 st.title("Quiniela Mundial 2026")
 
@@ -10,7 +15,9 @@ matches_by_id = {
     match["match_id"]: match
     for match in matches
 }
-# st.write(matches_by_id)
+
+results = get_results()
+# st.write(results)
 
 
 matches_by_group = defaultdict(list)
