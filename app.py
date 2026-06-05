@@ -6,12 +6,19 @@ from services.google_sheets import (get_matches, get_predictions, save_predictio
 from utils.constants import CURRENT_STAGE
 
 st.set_page_config(
-    page_title="QuinieLIMS",
-    initial_sidebar_state='expanded'
+    page_title="Mundialito",
+    page_icon="./assets/world-cup.png",
+    initial_sidebar_state='auto',
+    layout='wide',
+    menu_items={'About': "Arriba la Máquina celestial"}
 )
 
-st.title("Quiniela Mundial 2026")
-st.caption('¡Es hora de jugar! Empieza a incluir tus pronósticos.')
+header_col1, header_col2 = st.columns([1,3], vertical_alignment='center')
+with header_col1:
+    st.image('./assets/main_logo.png', width=200)
+with header_col2:
+    st.title("Quiniela Mundial 2026")
+    st.caption('¡Es hora de jugar! Empieza a incluir tus pronósticos.')
 # st.markdown("### Fase de grupos")
 
 matches = get_matches()
@@ -26,7 +33,7 @@ matches_by_group = defaultdict(list)
 st.markdown("---")
 
 st.subheader(
-    "😎 Identificación del participante"
+    "🔮Identificación del participante"
 )
 user_id = st.text_input(
     "Ingresa tu número de celular",
@@ -60,8 +67,8 @@ if is_valid:
         existing_user = get_user_info(result)
         # st.write(existing_user)
         display_name = existing_user['user_name']
-        st.success(f"👤 Bienvenido {display_name}")
-        st.info('Tu quiniela ya había sido registrada')
+        st.success(f"👤 Qué onda {display_name}")
+        st.info('Ya estaban cargadas tus predicciones 📊. Esta será la quiniela ganadora 😎')
         # st.write(existing_predictions)
         st.subheader("Tus predicciones registradas")
         for prediction in existing_predictions:
@@ -87,10 +94,11 @@ if is_valid:
 
 st.markdown("---")
 
-st.subheader(
-    f"⚽ Pronósticos - {CURRENT_STAGE.replace('_', ' ').title()}"
-)
+
 if can_submit_predictions:
+    st.subheader(
+        f"⚽ Pronósticos - {CURRENT_STAGE.replace('_', ' ').title()}"
+    )
     submit = st.button("Enviar Quiniela")
 else:
     submit = False
@@ -99,7 +107,7 @@ if submit:
     if not is_valid_name:
         st.error(name_result)
     elif not is_stage_open(CURRENT_STAGE):
-        st.error("La fase de grupos ya se encuentra cerrada.")
+        st.error(f"La {CURRENT_STAGE} ya se encuentra cerrada. Se te fue la tortuga 😨")
     else:
         predictions = []
 
@@ -136,9 +144,9 @@ if submit:
             save_predictions(predictions)
             if not existing_user:
                 save_user_info(result,name_result)
-                st.success("Predicciones registradas correctamente")
+                st.success("Predicciones registradas correctamente. Ojalá que tu te lleves el premio 💰 y que el Bicho gane el mundial 👏🏽")
         else:
-            st.error("Debes seleccionar todos los partidos antes de enviar tu quiniela.")
+            f"¡Abusado! Solo has llenado {len(predictions)} de los {len(matches)} partidos."
             
     
 if (
@@ -147,7 +155,7 @@ if (
     and not is_stage_open(CURRENT_STAGE)
 ):
         st.warning(
-            "La fase de grupos ya se encuentra cerrada."
+            f"Por el momento se cerró el changarro 😳 Se te pasó la fecha de la {CURRENT_STAGE}"
         )
 
 if can_submit_predictions:
@@ -156,7 +164,6 @@ if can_submit_predictions:
         matches_by_group[match["grupo"]].append(match)
 
     groups = sorted(matches_by_group.keys())
-    # st.write(st.session_state.get("match_1"))
 
     tabs = st.tabs([f"Grupo {group}" for group in groups])
 
@@ -165,28 +172,39 @@ if can_submit_predictions:
         with tab:
             st.write('Elige un resultado por partido: ')
             for match in matches_by_group[group]:
-                flex = st.container(horizontal=True, horizontal_alignment="center", vertical_alignment='center', width='stretch')
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.image(
-                        get_flag_path(match["local"]),
-                        width=40
+                with st.container(border=True):
+
+                    st.caption(
+                        f"{match['fecha']} · Partido {match['match_id']}"
                     )
-                with col2:
-                    st.write("VS")
-                with col3:
-                    st.image(
-                        get_flag_path(match["visitante"]),
-                        width=40
+
+                    flag_col1, flag_col2, flag_col3 = st.columns(3, vertical_alignment="center")
+
+                    with flag_col1:
+                        st.image(
+                            get_flag_path(match["local"]),
+                            width=60
+                        )
+                        st.caption(match["local"])
+
+                    with flag_col2:
+                        st.markdown("### VS")
+                    
+                    with flag_col3:
+                        st.image(
+                            get_flag_path(match["visitante"]),
+                            width=60
+                        )
+                        st.caption(match["visitante"])
+
+                    st.segmented_control(
+                        "Tu predicción es: ",
+                        [
+                            match["local"],
+                            "Empate",
+                            match["visitante"]
+                        ],
+                        key=f"match_{match['match_id']}",
+                        default=None
                     )
-                st.segmented_control(
-                    f"{match['fecha']}. Partido: {match['match_id']}:",
-                    [
-                        match['local'],
-                        "Empate",
-                        match['visitante']
-                    ],
-                    key=f"match_{match['match_id']}",
-                    default=None
-                )
             

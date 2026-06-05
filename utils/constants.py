@@ -6,6 +6,14 @@ STAGE_LOCKS = {
     "semifinales": "2026-07-14 13:00:00",
     "final": "2026-07-19 13:00:00"
 }
+STAGES = [
+    "fase_de_grupos",
+    "dieciseisavos",
+    "octavos",
+    "cuartos",
+    "semifinales",
+    "final"
+]
 COUNTRIES = {
     "Alemania": {
         "flag": "alemania.png"
