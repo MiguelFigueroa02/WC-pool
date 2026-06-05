@@ -15,7 +15,7 @@ st.set_page_config(
 
 header_col1, header_col2 = st.columns([1,3], vertical_alignment='center')
 with header_col1:
-    st.image('./assets/main_logo.png', width=200)
+    st.image('assets/main_logo.png', width=200)
 with header_col2:
     st.title("Quiniela Mundial 2026")
     st.caption('¡Es hora de jugar! Empieza a incluir tus pronósticos.')
