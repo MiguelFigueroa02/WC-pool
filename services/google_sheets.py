@@ -46,6 +46,21 @@ def get_user_info(user_id):
 
     return None
 
+def get_all_users():
+
+    spreadsheet = get_spreadsheet()
+
+    worksheet = spreadsheet.worksheet(
+        "user_info"
+    )
+
+    records = worksheet.get_all_records()
+
+    return {
+        str(row["user_id"]): row
+        for row in records
+    }
+
 def save_user_info(user_id, user_name):
     spreadsheet = get_spreadsheet()
     worksheet = spreadsheet.worksheet("user_info")

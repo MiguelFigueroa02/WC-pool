@@ -1,14 +1,16 @@
 import streamlit as st
+from services.google_sheets import (get_user_info, get_all_users)
 
 from services.ranking import (
     calculate_ranking
 )
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 st.title("🏆 Ranking")
 
 ranking = calculate_ranking()
+users = get_all_users()
 
 with col1:
 
@@ -18,10 +20,16 @@ with col1:
     )
 
 with col2:
-
+    leader = users.get(ranking[0]["usuario_id"])
     st.metric(
         "Líder",
-        ranking[0]["puntos"]
+        leader["user_name"]
+    )
+
+with col3:
+    st.metric(
+        "Premio acumulado",
+        f'$ {len(ranking) * 200}'
     )
 
 for position, player in enumerate(
@@ -50,7 +58,15 @@ for position, player in enumerate(
         )
 
     with col2:
-        st.write(player["usuario_id"])
+        # st.write(player["usuario_id"])
+        user = get_user_info(player["usuario_id"])
+        user = users.get(player["usuario_id"])
+        if user:
+            display_name = (user["user_name"])
+        else:
+            display_name = (str(player["usuario_id"]))
+        
+        st.write(display_name)
 
     with col3:
         st.write(
@@ -59,6 +75,5 @@ for position, player in enumerate(
 
     st.divider()
     
-
 
 

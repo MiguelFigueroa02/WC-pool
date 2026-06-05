@@ -1,7 +1,9 @@
 from collections import defaultdict
 import streamlit as st
+from utils.helpers import get_flag_path
 from services.validations import (validate_user_id, is_stage_open, validate_user_name)
-from services.google_sheets import (get_matches, get_predictions, save_predictions, get_results, save_user_info, get_user_info)
+from services.google_sheets import (get_matches, get_predictions, save_predictions, save_user_info, get_user_info)
+from utils.constants import CURRENT_STAGE
 
 st.set_page_config(
     page_title="QuinieLIMS",
@@ -9,6 +11,8 @@ st.set_page_config(
 )
 
 st.title("Quiniela Mundial 2026")
+st.caption('¡Es hora de jugar! Empieza a incluir tus pronósticos.')
+# st.markdown("### Fase de grupos")
 
 matches = get_matches()
 matches_by_id = {
@@ -16,26 +20,21 @@ matches_by_id = {
     for match in matches
 }
 
-results = get_results()
-# st.write(results)
-
 
 matches_by_group = defaultdict(list)
 
-for match in matches:
-    matches_by_group[match["grupo"]].append(match)
+st.markdown("---")
 
-groups = sorted(matches_by_group.keys())
-
-tabs = st.tabs([f"Grupo {group}" for group in groups])
-
+st.subheader(
+    "😎 Identificación del participante"
+)
 user_id = st.text_input(
     "Ingresa tu número de celular",
     placeholder="Ejemplo: 4490131313"
 )
 user_name = st.text_input(
     "¿Cuál es tu nombre?",
-    placeholder="Ejemplo: Diego Armando Maradona"
+    placeholder="Ejemplo: 'Maradona' o 'El_Diego' o 'D10S'"
 )
 
 existing_predictions = []
@@ -46,15 +45,23 @@ is_valid_name, name_result = (
         user_name
     )
 )
+can_submit_predictions = False
 if is_valid:
     existing_predictions = get_predictions(
         user_id=result,
-        etapa='fase_de_grupos'
+        etapa=CURRENT_STAGE
     )
+    if (not existing_predictions and is_valid_name):
+        if is_stage_open(CURRENT_STAGE):
+            can_submit_predictions = True
     # st.write(existing_predictions)
     # st.write(len(existing_predictions))
     if existing_predictions:
-        st.info('Ya existe una quiniela registrada para este número.')
+        existing_user = get_user_info(result)
+        # st.write(existing_user)
+        display_name = existing_user['user_name']
+        st.success(f"👤 Bienvenido {display_name}")
+        st.info('Tu quiniela ya había sido registrada')
         # st.write(existing_predictions)
         st.subheader("Tus predicciones registradas")
         for prediction in existing_predictions:
@@ -78,9 +85,12 @@ if is_valid:
 
             st.divider()
 
-has_predictions = bool(existing_predictions)
-st.write(has_predictions)
-if is_valid and not has_predictions:
+st.markdown("---")
+
+st.subheader(
+    f"⚽ Pronósticos - {CURRENT_STAGE.replace('_', ' ').title()}"
+)
+if can_submit_predictions:
     submit = st.button("Enviar Quiniela")
 else:
     submit = False
@@ -88,7 +98,7 @@ else:
 if submit:
     if not is_valid_name:
         st.error(name_result)
-    elif not is_stage_open("fase_de_grupos"):
+    elif not is_stage_open(CURRENT_STAGE):
         st.error("La fase de grupos ya se encuentra cerrada.")
     else:
         predictions = []
@@ -99,7 +109,9 @@ if submit:
                 f"match_{match['match_id']}"
             )
 
-            if selection == match["local"]:
+            if selection is None:
+                continue
+            elif selection == match["local"]:
                 prediction = "LOCAL"
 
             elif selection == "Empate":
@@ -120,29 +132,61 @@ if submit:
         submit = False
         existing_user = get_user_info(result)
 
-        save_predictions(predictions)
-        if not existing_user:
-            save_user_info(result,name_result)
-        st.success("Predicciones registradas correctamente")
+        if len(predictions) == len(matches):
+            save_predictions(predictions)
+            if not existing_user:
+                save_user_info(result,name_result)
+                st.success("Predicciones registradas correctamente")
+        else:
+            st.error("Debes seleccionar todos los partidos antes de enviar tu quiniela.")
+            
     
+if (
+    is_valid
+    and not existing_predictions
+    and not is_stage_open(CURRENT_STAGE)
+):
+        st.warning(
+            "La fase de grupos ya se encuentra cerrada."
+        )
 
+if can_submit_predictions:
 
-for tab, group in zip(tabs, groups):
+    for match in matches:
+        matches_by_group[match["grupo"]].append(match)
 
-    with tab:
+    groups = sorted(matches_by_group.keys())
+    # st.write(st.session_state.get("match_1"))
 
-        for match in matches_by_group[group]:
-            st.write(match["fecha"])
-            st.write(
-                f'{match["local"]} vs {match["visitante"]}'
-            )
-            st.radio(
-                "Selecciona un resultado",
-                [
-                    match['local'],
-                    "Empate",
-                    match['visitante']
-                ],
-                key=f"match_{match['match_id']}"
-            )
+    tabs = st.tabs([f"Grupo {group}" for group in groups])
+
+    for tab, group in zip(tabs, groups):
+
+        with tab:
+            st.write('Elige un resultado por partido: ')
+            for match in matches_by_group[group]:
+                flex = st.container(horizontal=True, horizontal_alignment="center", vertical_alignment='center', width='stretch')
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.image(
+                        get_flag_path(match["local"]),
+                        width=40
+                    )
+                with col2:
+                    st.write("VS")
+                with col3:
+                    st.image(
+                        get_flag_path(match["visitante"]),
+                        width=40
+                    )
+                st.segmented_control(
+                    f"{match['fecha']}. Partido: {match['match_id']}:",
+                    [
+                        match['local'],
+                        "Empate",
+                        match['visitante']
+                    ],
+                    key=f"match_{match['match_id']}",
+                    default=None
+                )
             
