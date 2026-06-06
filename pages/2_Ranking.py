@@ -16,7 +16,7 @@ with col1:
 
     st.metric(
         "Participantes",
-        len(ranking)
+        len(users)
     )
 
 with col2:
@@ -29,7 +29,7 @@ with col2:
 with col3:
     st.metric(
         "Premio acumulado",
-        f'$ {len(ranking) * 200}'
+        f'$ {len(users) * 200}'
     )
 
 for position, player in enumerate(
