@@ -16,20 +16,23 @@ with col1:
 
     st.metric(
         "Participantes",
-        len(ranking)
+        len(users)
     )
 
 with col2:
-    leader = users.get(ranking[0]["usuario_id"])
-    st.metric(
-        "Líder",
-        leader["user_name"]
-    )
+    if len(ranking) > 0:
+        leader = users.get(ranking[0]["usuario_id"])
+        st.metric(
+            "Líder",
+            leader["user_name"]
+        )
+    else:
+        st.write('Aún no hay líder')
 
 with col3:
     st.metric(
         "Premio acumulado",
-        f'$ {len(ranking) * 200}'
+        f'$ {len(users) * 200}'
     )
 
 for position, player in enumerate(
