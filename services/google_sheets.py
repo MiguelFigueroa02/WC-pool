@@ -88,7 +88,7 @@ def save_predictions(predictions):
                 prediction['prediccion']
             ]
         )
-    st.write(rows)
+    # st.write(rows)
     worksheet.append_rows(rows)
 
 def get_predictions(user_id, etapa):
