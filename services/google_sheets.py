@@ -12,6 +12,7 @@ SCOPES = [
 
 SPREADSHEET_NAME = "Quiniela Mundial 2026"
 
+
 @st.cache_resource
 def get_gspread_client():
 
@@ -22,19 +23,21 @@ def get_gspread_client():
 
     return gspread.authorize(creds)
 
-@st.cache_resource
+# @st.cache_resource
 def get_spreadsheet():
     
     client = get_gspread_client()
+
+    return client.open(SPREADSHEET_NAME)
     
-    for _ in range(3):
-        try: 
-            return client.open(SPREADSHEET_NAME)
-        except Exception:
-            time.sleep(15)
+    # for _ in range(3):
+    #     try: 
+    #         return client.open(SPREADSHEET_NAME)
+    #     except Exception:
+    #         time.sleep(15)
             
     
-    raise Exception("Repetir acceso con Google Sheets")
+    # raise Exception("Repetir acceso con Google Sheets")
 
 
     
