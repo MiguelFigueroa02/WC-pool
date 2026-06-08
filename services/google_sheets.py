@@ -2,6 +2,7 @@ import streamlit as st
 import gspread
 from datetime import datetime
 from google.oauth2.service_account import Credentials
+import time
 
 
 SCOPES = [
@@ -11,7 +12,7 @@ SCOPES = [
 
 SPREADSHEET_NAME = "Quiniela Mundial 2026"
 
-
+@st.cache_resource
 def get_gspread_client():
 
     creds = Credentials.from_service_account_info(
@@ -21,31 +22,44 @@ def get_gspread_client():
 
     return gspread.authorize(creds)
 
-
+@st.cache_resource
 def get_spreadsheet():
-
+    
     client = get_gspread_client()
+    
+    for _ in range(3):
+        try: 
+            return client.open(SPREADSHEET_NAME)
+        except Exception:
+            time.sleep(2)
+            
+    
+    raise Exception("Repetir acceso con Google Sheets")
 
-    return client.open(SPREADSHEET_NAME)
 
+    
 
+@st.cache_data(ttl=300)
 def get_matches():
     spreadsheet = get_spreadsheet()
     worksheet = spreadsheet.worksheet("partidos")
     return worksheet.get_all_records()
 
 def get_user_info(user_id):
-    spreadsheet = get_spreadsheet()
-    worksheet = spreadsheet.worksheet(
-        "user_info"
-    )
-    records = worksheet.get_all_records()
-    for row in records:
-        if str(row["user_id"]) == str(user_id):
-            return row
+    # spreadsheet = get_spreadsheet()
+    # worksheet = spreadsheet.worksheet(
+    #     "user_info"
+    # )
+    # records = worksheet.get_all_records()
+    # for row in records:
+    #     if str(row["user_id"]) == str(user_id):
+    #         return row
 
-    return None
+    # return None
+    users = get_all_users()
+    return users.get(str(user_id))
 
+@st.cache_data(ttl=300)
 def get_all_users():
 
     spreadsheet = get_spreadsheet()
@@ -72,6 +86,7 @@ def save_user_info(user_id, user_name):
         ]
     )
     worksheet.append_rows(rows)
+    get_all_users.clear()
 
 def save_predictions(predictions):
     spreadsheet = get_spreadsheet()
@@ -90,11 +105,15 @@ def save_predictions(predictions):
         )
     # st.write(rows)
     worksheet.append_rows(rows)
+    get_all_predictions.clear()
+    get_predictions.clear()
 
+@st.cache_data(ttl=60)
 def get_predictions(user_id, etapa):
-    spreadsheet = get_spreadsheet()
-    worksheet = spreadsheet.worksheet("predicciones")
-    records = worksheet.get_all_records()
+    # spreadsheet = get_spreadsheet()
+    # worksheet = spreadsheet.worksheet("predicciones")
+    # records = worksheet.get_all_records()
+    records = get_all_predictions()
     return [
         row
         for row in records
@@ -102,6 +121,7 @@ def get_predictions(user_id, etapa):
         and row["etapa"] == etapa
     ]
 
+@st.cache_data(ttl=60)
 def get_all_predictions():
     spreadsheet = get_spreadsheet()
     worksheet = spreadsheet.worksheet(
@@ -109,6 +129,7 @@ def get_all_predictions():
     )
     return worksheet.get_all_records()
 
+@st.cache_data(ttl=300)
 def get_results():
     spreadsheet = get_spreadsheet()
     worksheet = spreadsheet.worksheet("resultados")

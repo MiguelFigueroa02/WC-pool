@@ -10,7 +10,7 @@ st.set_page_config(
     page_icon="./assets/world-cup.png",
     initial_sidebar_state='auto',
     layout='wide',
-    menu_items={'About': "Arriba la Máquina celestial"}
+    menu_items={'About': "Si tienes problema nomás échale un grito a Flavia en el grupo. No te me desesperes campeón y recuerda que Arriba la Máquina celestial"}
 )
 
 header_col1, header_col2 = st.columns([1,3], vertical_alignment='center')
@@ -53,7 +53,7 @@ is_valid_name, name_result = (
     )
 )
 can_submit_predictions = False
-if is_valid:
+if is_valid and is_valid_name:
     existing_predictions = get_predictions(
         user_id=result,
         etapa=CURRENT_STAGE
