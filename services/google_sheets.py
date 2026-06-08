@@ -31,7 +31,7 @@ def get_spreadsheet():
         try: 
             return client.open(SPREADSHEET_NAME)
         except Exception:
-            time.sleep(2)
+            time.sleep(15)
             
     
     raise Exception("Repetir acceso con Google Sheets")
@@ -108,7 +108,7 @@ def save_predictions(predictions):
     get_all_predictions.clear()
     get_predictions.clear()
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=600)
 def get_predictions(user_id, etapa):
     # spreadsheet = get_spreadsheet()
     # worksheet = spreadsheet.worksheet("predicciones")
