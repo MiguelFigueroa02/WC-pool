@@ -23,8 +23,10 @@ def get_gspread_client():
 
     return gspread.authorize(creds)
 
-# @st.cache_resource
+@st.cache_resource
 def get_spreadsheet():
+
+    print("ABRIENDO SPREADSHEET")
     
     client = get_gspread_client()
 
